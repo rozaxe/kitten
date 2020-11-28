@@ -3,22 +3,49 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^1.2.32",
+    "@fortawesome/free-solid-svg-icons": "^5.15.1",
+    "@fortawesome/react-fontawesome": "^0.1.13",
+    "@hookform/resolvers": "^1.0.1",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
     "@types/jest": "^26.0.15",
+    "@types/lodash-es": "^4.17.3",
     "@types/node": "^12.0.0",
-    "@types/react": "^16.9.53",
-    "@types/react-dom": "^16.9.8",
+    "@types/react": "^17.0.0",
+    "@types/react-dom": "^17.0.0",
+    "@types/uuid": "^8.3.0",
+    "@types/yup": "^0.29.9",
+    "fp-ts": "^2.9.0",
+    "lodash-es": "^4.17.15",
+    "lodash.merge": "^4.6.2",
+    "luxon": "^1.25.0",
+    "postcss": "^8.1.10",
+    "r-maple": "^0.0.4",
+    "r-orchid": "^0.1.0",
+    "r-reactive-store": "^0.3.0",
+    "r-use-observable": "^1.0.1",
+    "r-use-value-observable": "^1.0.0",
+    "r-value-observable": "^0.0.1",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
+    "react-hook-form": "^6.11.5",
     "react-scripts": "4.0.1",
+    "rxjs": "^6.6.3",
+    "sass": "^1.29.0",
+    "tailwindcss": "^2.0.1",
+    "tailwindcss-cli": "^0.1.2",
     "typescript": "^4.0.3",
-    "web-vitals": "^0.2.4"
+    "uuid": "^8.3.1",
+    "web-vitals": "^0.2.4",
+    "yup": "^0.31.0"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "build:css": "tailwindcss-cli build ./src/components.css -o ./public/components.out.css",
+    "postbuild": "purgecss",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -39,5 +66,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@types/luxon": "^1.25.0"
   }
 }

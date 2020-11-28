@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+
+.app-label {
+    @apply m-1 flex flex-col;
+}
+
+.app-label > .or-input {
+    @apply m-0 mt-1;
+}
+
+@tailwind utilities;
