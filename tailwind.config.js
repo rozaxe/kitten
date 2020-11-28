@@ -1,6 +1,6 @@
 module.exports = {
   presets: [
-    require('./node_modules/r-orchid/build/tailwind.config.js')
+    require('./node_modules/r-orchid/lib/tailwind.config.js')
   ],
   purge: [],
   darkMode: false, // or 'media' or 'class'

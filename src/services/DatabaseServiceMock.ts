@@ -4,7 +4,7 @@ import { Expense } from '../models/Expense'
 import { Kitty } from '../models/Kitty'
 
 const kitties: Kitty[] = [
-    { id: 'a', name: 'Trip', expenses: [], savings: [] }
+    { id: 'a', name: 'Trip', expenses: [], savings: [], archived: false }
 ]
 
 export class DatabaseServiceMock implements DatabaseService {
