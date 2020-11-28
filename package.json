@@ -27,7 +27,7 @@
     "postcss-cli": "^8.3.0",
     "postcss-import": "^13.0.0",
     "postcss-nested": "^5.0.1",
-    "r-maple": "^0.0.4",
+    "r-maple": "^0.1.0",
     "r-orchid": "^0.3.0",
     "r-reactive-store": "^0.3.0",
     "r-use-observable": "^1.0.1",
