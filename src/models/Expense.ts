@@ -2,7 +2,7 @@
 export type Expense = {
     id: string
     kittyId: string
-    name: string
+    memo: string
     amount: number
     date: Date
 }

@@ -6,8 +6,8 @@ import React, { useEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { map } from 'rxjs/operators'
 import { date, number, object, string } from 'yup'
-import { useKittenService } from '../../../../hooks/useKittenService'
-import { Funds } from '../../../../models/Funds'
+import { useKittenService } from '../../../../../hooks/useKittenService'
+import { Funds } from '../../../../../models/Funds'
 
 type TreasuryDialogProps = {
     isOpen: boolean
@@ -76,7 +76,7 @@ function TreasuryForm({ onClose }: any) {
                 </div>
                 <div className="or-row-reverse p-1">
                     <input className="or-button--primary min-w-2/12g" type="submit" value="Save" disabled={!formState.isValid} />
-                    <button className="or-button min-w-2/12g" onClick={onClose}>Cancel</button>
+                    <button type="button" className="or-button min-w-2/12g" onClick={onClose}>Cancel</button>
                 </div>
             </form>
         </>

@@ -2,10 +2,14 @@ import React, { useState } from 'react'
 import styles from './SideBar.module.scss';
 import { useObservable } from 'r-use-observable'
 import { none, fold } from 'fp-ts/lib/Option'
-import { useKittenService } from '../../../hooks/useKittenService';
-import { Kitty } from '../../../models/Kitty';
-import FoldOption from '../../../components/FoldOption';
+import { useKittenService } from '../../../../hooks/useKittenService';
+import { Kitty } from '../../../../models/Kitty';
+import FoldOption from '../../../../components/FoldOption';
 import TreasuryDialog from './TreasuryDialog/TreasuryDialog';
+import NewKittyDialog from './NewKittyDialog/NewKittyDialog';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEdit } from '@fortawesome/free-solid-svg-icons';
+import { faPlusSquare } from '@fortawesome/free-regular-svg-icons';
 
 type SideBarProps = {
     className?: string
@@ -13,22 +17,26 @@ type SideBarProps = {
 
 export default function SideBar({ className = '' }: SideBarProps): JSX.Element {
     const kittenService = useKittenService()
-    const kitties = useObservable(kittenService.getKittiesId$, [])
-    const [isFormOpen, setIsFormOpen] = useState(false)
+    const kitties = useObservable(kittenService.getVisibleKittiesId$, [])
+    const [isTreasuryFormOpen, setIsTreasuryFormOpen] = useState(false)
+    const [isNewKittyFormOpen, setIsNewKittyFormOpen] = useState(false)
 
     const treasury = useObservable(kittenService.getTreasury$, 0)
 
     return (
         <div className={`${className} or-column or-section or-theme--light-gray`}>
-            <div className="or-row--padded or-theme--dark or-section sticky">
+            <div className="or-row--padded or-theme--dark-gray or-section sticky items-center">
                 Treasury
                 <div className="flex-1 text-right">{kittenService.formatPrice(treasury)}</div>
-                <button className="or-button--ghost" onClick={() => setIsFormOpen(true)}>Edit</button>
-                <TreasuryDialog isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} />
+                <button className="or-button--ghost" onClick={() => setIsTreasuryFormOpen(true)}>
+                    <FontAwesomeIcon icon={faEdit} />
+                </button>
+                <TreasuryDialog isOpen={isTreasuryFormOpen} onClose={() => setIsTreasuryFormOpen(false)} />
             </div>
-            <div>
-                New kitty
-            </div>
+            <button className="or-button--ghost m-0 rounded-none p-2" onClick={() => setIsNewKittyFormOpen(true)}>
+                <FontAwesomeIcon icon={faPlusSquare} className="mr-2" /> New kitty
+            </button>
+            <NewKittyDialog isOpen={isNewKittyFormOpen} onClose={() => setIsNewKittyFormOpen(false)} />
             {kitties.map(kittyId => <KittyCard key={kittyId} kittyId={kittyId} />)}
         </div>
     )

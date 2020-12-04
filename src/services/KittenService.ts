@@ -1,11 +1,13 @@
 import { fold, fromNullable, isNone, none, Option, some } from 'fp-ts/lib/Option'
+import { pass } from 'fp-ts/lib/Writer'
+import _isEmpty from 'lodash-es/isEmpty'
+import _isEqual from 'lodash-es/isEqual'
 import _map from 'lodash-es/map'
 import _reduce from 'lodash-es/reduce'
-import _isEqual from 'lodash-es/isEqual'
 import { DateTime } from 'luxon'
 import { createStore, Store } from 'r-reactive-store'
-import { BehaviorSubject, combineLatest, Observable, of } from 'rxjs'
-import { distinctUntilChanged, filter, map, mergeMap, startWith, tap } from 'rxjs/operators'
+import { BehaviorSubject, combineLatest, defer, from, iif, Observable, of, ReplaySubject } from 'rxjs'
+import { catchError, distinctUntilChanged, filter, map, mapTo, shareReplay, switchMap, take, tap } from 'rxjs/operators'
 import { v4 as uuidv4 } from 'uuid'
 import { DatabaseService } from '../models/DatabaseService'
 import { Expense } from '../models/Expense'
@@ -28,14 +30,72 @@ export class KittenService {
     private locale: string = 'en-US'
     private currency: string = 'USD'
     private currencyFactor: number = 0
+    private isSignedIn$: ReplaySubject<boolean> = new ReplaySubject(1)
+    private selectFunds$: Observable<Funds[]>
+    private selectKities$: Observable<Kitty[]>
 
     constructor(private databaseService: DatabaseService) {
         this.store = createStore('kitties', 'savings', 'expenses', 'funds')
-        this.databaseService.selectKitties().then(kitties => {
-            kitties.forEach(this.store.kitties.create)
-        })
         this.computeLocale()
-        
+
+        this.selectFunds$ = defer(
+            () => this.databaseService.selectFunds()
+        ).pipe(
+            tap((funds: any) => {
+                funds.forEach((funds: any) => {
+                    this.store.funds.create({
+                        ...funds,
+                        date: new Date(funds.date)
+                    })
+                })
+            }),
+            shareReplay(1),
+            switchMap(() => this.store.funds.getAll$()),
+        )
+
+        this.selectKities$ = defer(
+            () => this.databaseService.selectKitties()
+        ).pipe(
+            tap((raw) => {
+                const { kitties, expenses, savings } = this.normalizeKitties(raw)
+                kitties.forEach(this.store.kitties.create)
+                expenses.forEach(this.store.expenses.create)
+                savings.forEach(this.store.savings.create)
+            }),
+            shareReplay(1),
+            switchMap(() => this.store.kitties.getAll$()),
+        )
+    }
+
+    private normalizeKitties = (raw: any) => {
+        return raw.reduce(
+            (acc: any, raw: any) => {
+                const expenses = raw.expenses.map(
+                    (raw: any) => ({
+                        ...raw,
+                        kittyId: raw.kitty_id,
+                        date: new Date(raw.date)
+                    })
+                )
+                const savings = raw.savings.map(
+                    (raw: any) => ({
+                        ...raw,
+                        kittyId: raw.kitty_id,
+                        date: new Date(raw.date)
+                    })
+                )
+                const kitty = {
+                    ...raw,
+                    expenses: expenses.map((n: any) => n.id),
+                    savings: savings.map((n: any) => n.id),
+                }
+                acc.kitties.push(kitty)
+                acc.expenses.push(...expenses)
+                acc.savings.push(...savings)
+                return acc
+            },
+            { kitties: [], expenses: [], savings: [] }
+        )
     }
 
     private computeLocale = () => {
@@ -65,8 +125,8 @@ export class KittenService {
 
     //#region Kitties
 
-    getKittiesId$ = (): Observable<string[]> => {
-        return this.store.kitties.getAll$().pipe(
+    getVisibleKittiesId$ = (): Observable<string[]> => {
+        return this.selectKities$.pipe(
             map(kitties => kitties.filter(kitty => !kitty.archived)),
             map(kitties => kitties.map(kitty => kitty.id)),
             distinctUntilChanged(_isEqual)
@@ -76,6 +136,10 @@ export class KittenService {
     //#endregion
 
     //#region Kitty
+    
+    getKitty = (id: string): Kitty => {
+        return this.store.kitties.get(id)!
+    }
 
     getKitty$ = (id: string): Observable<Kitty> => {
         return this.store.kitties.get$(id).pipe(
@@ -92,7 +156,23 @@ export class KittenService {
     createKitty = (values: Pick<Kitty, 'name'>): Kitty => {
         const kitty = { ...values, archived: false, id: uuidv4(), expenses: [], savings: [] }
         this.store.kitties.create(kitty)
+        this.databaseService.insertKitty(kitty)
         return kitty
+    }
+
+    archiveKitty = (id: string) => {
+        this.assertKittyExists(id)
+        const remainingFunds = this.getFundsOfKitty(id)
+        this.createSavingsToday({ kittyId: id, amount: -remainingFunds })
+        this.store.kitties.patch(id, { archived: true })
+        this.databaseService.softDeleteKitty(id)
+    }
+
+    updateKitty = (id: string, values: Pick<Kitty, 'name'>): Kitty => {
+        this.assertKittyExists(id)
+        const kittyUpdated = this.store.kitties.patch(id, { name: values.name })
+        this.databaseService.patchKitty(id, { name: values.name })
+        return kittyUpdated
     }
 
     //#endregion
@@ -109,7 +189,9 @@ export class KittenService {
             this.store.kitties.patch(kitty.id, { savings: [ ...kitty.savings, savingsId ]})
         }
         const savings = this.store.savings.get(savingsId)!
-        return this.store.savings.patch(savings.id, { amount: savings.amount + values.amount })
+        const savingsUpdated = this.store.savings.patch(savings.id, { amount: savings.amount + values.amount })
+        this.databaseService.upsertSavings(savingsUpdated)
+        return savingsUpdated
     }
 
     createSavingsToday = (values: Pick<Savings, 'kittyId' | 'amount'>): Savings => {
@@ -135,6 +217,7 @@ export class KittenService {
         const expense = { ...values, id: uuidv4() }
         this.store.expenses.create(expense)
         this.store.kitties.patch(kitty.id, { expenses: [ ...kitty.expenses, expense.id ] })
+        this.databaseService.insertExpense(expense)
         return expense
     }
 
@@ -144,6 +227,17 @@ export class KittenService {
         const kitty = this.store.kitties.get(expense.kittyId)!
         this.store.expenses.remove(id)
         this.store.kitties.patch(kitty.id, { expenses: kitty.expenses.filter(i => i !== id) })
+        this.databaseService.deleteExpense(id)
+    }
+
+    updateExpense = (id: string, values: Pick<Expense, 'date' | 'amount' | 'memo' >): Expense => {
+        const expenseUpdated = this.store.expenses.patch(id, { date: values.date, amount: values.amount, memo: values.memo })
+        this.databaseService.patchExpense(id, { date: values.date, amount: values.amount, memo: values.memo })
+        return expenseUpdated
+    }
+
+    getExpense = (id: string): Expense => {
+        return this.store.expenses.get(id)!
     }
 
     //#endregion
@@ -157,7 +251,9 @@ export class KittenService {
             this.store.funds.create({ id: fundsId, amount: 0, date: values.date })
         }
         const funds = this.store.funds.get(fundsId)!
-        return this.store.funds.patch(funds.id, { amount: values.amount })
+        const fundsUpdated = this.store.funds.patch(funds.id, { amount: values.amount })
+        this.databaseService.upsertFunds(fundsUpdated)
+        return fundsUpdated
     }
 
     createFundsToday = (values: Omit<Funds, 'id' | 'date'>): Funds => {
@@ -192,23 +288,29 @@ export class KittenService {
 
     private getExpensesOfKitty$ = (kittyId: string): Observable<Expense[]> => {
         return this.getKitty$(kittyId).pipe(
-            mergeMap(kitty => combineLatest(
-                _map(
-                    kitty.expenses,
-                    expenseId => this.getExpense$(expenseId)
+            switchMap(kitty => iif(
+                () => _isEmpty(kitty.expenses),
+                of([]),
+                combineLatest(
+                    _map(
+                        kitty.expenses,
+                        expenseId => this.getExpense$(expenseId)
+                    )
                 )
-            ).pipe(
-                startWith([])
             ))
         )
     }
 
     private getSavingsOfKitty$ = (kittyId: string): Observable<Savings[]> => {
         return this.getKitty$(kittyId).pipe(
-            mergeMap(kitty => combineLatest(
-                _map(
-                    kitty.savings,
-                    savingsId => this.getSavings$(savingsId)
+            switchMap(kitty => iif(
+                () => _isEmpty(kitty.savings),
+                of([]),
+                    combineLatest(
+                    _map(
+                        kitty.savings,
+                        savingsId => this.getSavings$(savingsId)
+                    )
                 )
             ))
         )
@@ -219,13 +321,20 @@ export class KittenService {
             this.getSavingsOfKitty$(kittyId),
             this.getExpensesOfKitty$(kittyId)
         ]).pipe(
-            startWith([], []),
             map(([savings, expenses]) => {
                 const sumOfSavings = this.sumOfAmount(savings)
                 const sumOfExpenses = this.sumOfAmount(expenses)
                 return sumOfSavings - sumOfExpenses
             })
         )
+    }
+
+    getFundsOfKitty = (kittyId: string): number => {
+        this.assertKittyExists(kittyId)
+        const kitty = this.getKitty(kittyId)
+        const savings = kitty.savings.map(this.store.savings.get) as Savings[]
+        const expenses = kitty.expenses.map(this.store.expenses.get) as Expense[]
+        return this.sumOfAmount(savings) - this.sumOfAmount(expenses)
     }
 
     getExpense$ = (id: string): Observable<Expense> => {
@@ -247,24 +356,21 @@ export class KittenService {
     }
 
     getAllSavings$ = (): Observable<Savings[]> => {
-        return this.store.savings.getAllIds$().pipe(
-            mergeMap(ids => combineLatest(
-                _map(
-                    ids,
-                    id => this.getSavings$(id)
-                )
-            ))
-        )
+        return this.store.savings.getAll$()
     }
 
     setKittySelected = (kittyId: string) => {
-        this.kittySelected$.next(some(kittyId));
+        this.kittySelected$.next(some(kittyId))
+    }
+
+    unsetKittySelected = () => {
+        this.kittySelected$.next(none)
     }
 
     getTreasury$ = (): Observable<number> => {
         return combineLatest([
             this.getLastFunds$(),
-            this.getAllSavings$()
+            this.getAllSavings$(),
         ]).pipe(
             map(([funds, savings]) => funds.amount - this.sumOfAmount(savings)),
         )
@@ -285,25 +391,40 @@ export class KittenService {
     }
 
     private getFunds$ = (): Observable<Funds[]> => {
-        return this.store.funds.getAllIds$().pipe(
-            mergeMap(ids => combineLatest(
-                _map(
-                    ids,
-                    id => this.store.funds.get$(id).pipe(
-                        filter(isNotNull)
-                    )
-                )
-            )),
-        )
+        return this.selectFunds$
     }
 
     getKittySelected$ = (): Observable<Option<Kitty>> => {
         return this.kittySelected$.pipe(
-            mergeMap(fold(
+            switchMap(fold(
                 () => of(none),
-                kittyId => this.getSomeKitty$(kittyId)
+                kittyId => this.getSomeKitty$(kittyId as any)
             ))
         )
+    }
+
+    getSomeSignedIn$ = (): Observable<Option<boolean>> => {
+        return this.isSignedIn$.pipe(
+            map(some)
+        )
+    }
+
+    auth = async () => {
+        this.isSignedIn$.next(false)
+        // this.signIn(process.env.REACT_APP_SUPABASE_DEV_EMAIL as string, process.env.REACT_APP_SUPABASE_DEV_PASSWORD as string)
+    }
+
+    signUp = async (email: string, password: string): Promise<void> => {
+        await this.databaseService.signUp(email, password)
+    }
+
+    signIn = async (email: string, password: string) => {
+        try {
+            await this.databaseService.signIn(email, password)
+            this.isSignedIn$.next(true)
+        } catch (error) {
+            
+        }
     }
 
     formatPrice = (amount: number): string => {
@@ -320,6 +441,10 @@ export class KittenService {
 
     currencyToInteger = (amount: number): number => {
         return Math.ceil(amount * this.currencyFactor)
+    }
+
+    integerToCurrency = (amount: number): number => {
+        return amount / this.currencyFactor
     }
 
     private sumOfAmount = (items: Array<{ amount: number }>): number => {

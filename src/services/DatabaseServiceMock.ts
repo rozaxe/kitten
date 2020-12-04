@@ -1,13 +1,43 @@
 
 import { DatabaseService } from '../models/DatabaseService'
 import { Expense } from '../models/Expense'
+import { Funds } from '../models/Funds'
 import { Kitty } from '../models/Kitty'
+import { Savings } from '../models/Savings'
 
 const kitties: Kitty[] = [
     { id: 'a', name: 'Trip', expenses: [], savings: [], archived: false }
 ]
 
 export class DatabaseServiceMock implements DatabaseService {
+    patchExpense = (id: string, patch: Partial<Expense>): Promise<void> => {
+        return Promise.resolve()
+    }
+    
+    signUp = (email: string, password: string): Promise<void> => {
+        return Promise.resolve()
+    }
+
+    signIn = (email: string, password: string): Promise<void> => {
+        return Promise.resolve()
+    }
+
+    softDeleteKitty = (id: string): Promise<void> => {
+        return Promise.resolve()
+    }
+
+    selectFunds = (): Promise<Funds[]> => {
+        return Promise.resolve([])
+    }
+
+    upsertFunds = (funds: Funds): Promise<void> => {
+        return Promise.resolve()
+    }
+
+    deleteExpense = (id: string): Promise<void> => {
+        return Promise.resolve()
+    }
+
 
     //#region Kitty
 
@@ -16,6 +46,10 @@ export class DatabaseServiceMock implements DatabaseService {
     }
 
     insertKitty = async (kitty: Kitty): Promise<void> => {
+        return Promise.resolve()
+    }
+
+    patchKitty = async () => {
         return Promise.resolve()
     }
 
@@ -29,68 +63,11 @@ export class DatabaseServiceMock implements DatabaseService {
 
     //#endregion
 
-    /*
-    //#region Savings
-
-    selectSavingsByKittyAndDate = async (kittyId: string, date: number): Promise<Option<SavingsDocument>> => {
-        const savingsOrNull = await this.db.savings.findOne({
-            selector: {
-                kittyId: { $eq: kittyId },
-                date: { $eq: date }
-            }
-        }).exec()
-        return fromNullable(savingsOrNull)
+    upsertSavings(savings: Savings): Promise<void> {
+        return Promise.resolve()
     }
 
-    selectSavings$ = (id: string): Observable<Savings> => {
-        return this.db.savings.findOne().where('id').eq(id).$.pipe(
-            filter(isNotNull)
-        )
+    trySignIn = () => {
+        return Promise.resolve()
     }
-
-    selectAllSavings$ = (): Observable<SavingsDocument[]> => {
-        return this.db.savings.find().$
-    }
-
-    insertSavings = async (savings: Omit<Savings, 'id'>): Promise<SavingsDocument> => {
-        return this.db.savings.insert({
-            ...savings,
-            id: uuidv4(),
-        })
-    }
-
-    upsertSavings = async (savings: Omit<Savings, 'id'>): Promise<SavingsDocument> => {
-        const documentOrNull = await this.db.savings.findOne().where('date').eq(savings.date).exec()
-        if (documentOrNull == null) {
-            return this.db.savings.insert({
-                ...savings,
-                id: uuidv4()
-            })
-        }
-        return documentOrNull.update({
-            $set: {
-                ...savings,
-            }
-        })
-    }
-
-    //#endregion
-
-    //#region Funds
-
-    insertFunds = async (funds: Omit<Funds, 'id'>): Promise<FundsDocument> => {
-        return this.db.funds.insert({
-            ...funds,
-            id: uuidv4(),
-        })
-    }
-
-    selectLastFunds$ = (): Observable<FundsDocument> => {
-        return this.db.funds.findOne().sort('date').$.pipe(
-            filter(isNotNull)
-        )
-    }
-
-    //#endregion
-    */
 }

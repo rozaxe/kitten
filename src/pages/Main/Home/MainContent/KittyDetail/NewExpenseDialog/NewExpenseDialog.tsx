@@ -3,7 +3,7 @@ import { Dialog } from 'r-maple'
 import React, { useEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { date, number, object, string } from 'yup'
-import { useKittenService } from '../../../../../hooks/useKittenService'
+import { useKittenService } from '../../../../../../hooks/useKittenService'
 
 type ExpenseDialogProps = {
     isOpen: boolean
@@ -12,7 +12,7 @@ type ExpenseDialogProps = {
 }
 
 const expenseFormValues = object({
-    name: string().required(),
+    memo: string().required(),
     date: date().required(),
     amount: number().required(),
 })
@@ -33,14 +33,14 @@ function ExpenseForm({ kittyId, onClose }: any) {
         resolver: yupResolver(expenseFormValues),
     })
 
-    const descriptionRef = useRef<HTMLInputElement | null>()
+    const memoRef = useRef<HTMLInputElement | null>()
 
     useEffect(() => {
-        descriptionRef.current?.focus()
+        memoRef.current?.focus()
     }, [])
 
     const onSubmit = (values: any) => {
-        kittenService.createExpense({ ...values, amount: kittenService.currencyToInteger(values.amount), kittyId })
+        kittenService.createExpense({ ...values, amount: kittenService.currencyToInteger(Math.abs(values.amount)), kittyId })
         onClose()
     }
 
@@ -51,14 +51,14 @@ function ExpenseForm({ kittyId, onClose }: any) {
                 <div className="or-dialog__content or-column">
                     <label className="app-label">
                         Description
-                        <input className="or-input" placeholder="Name" name="name" ref={(node) => {
+                        <input className="or-input" placeholder="Description" name="memo" ref={(node) => {
                             register(node, { required: true })
-                            descriptionRef.current = node
+                            memoRef.current = node
                         }} />
                     </label>
                     <label className="app-label">
                         Amount
-                        <input className="or-input" placeholder="Amount" type="number" name="amount" ref={register({ required: true })} />
+                        <input className="or-input" placeholder="Amount" type="number" name="amount" step={`.01`} ref={register({ required: true })} />
                     </label>
                     <label className="app-label">
                         Date
@@ -67,7 +67,7 @@ function ExpenseForm({ kittyId, onClose }: any) {
                 </div>
                 <div className="or-row-reverse p-1">
                     <input className="or-button--primary min-w-2/12g" type="submit" value="Save" disabled={!formState.isValid} />
-                    <button className="or-button min-w-2/12g" onClick={onClose}>Cancel</button>
+                    <button type="button" className="or-button min-w-2/12g" onClick={onClose}>Cancel</button>
                 </div>
             </form>
         </>
