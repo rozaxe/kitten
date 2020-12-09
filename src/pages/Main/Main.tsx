@@ -16,7 +16,11 @@ export default function Main() {
     )
 
     useEffect(() => {
-        kittenService.auth()
+        if (process.env.NODE_ENV === 'development' && process.env.REACT_APP_AUTO_SIGNIN === 'true') {
+            kittenService.signIn(process.env.REACT_APP_SUPABASE_DEV_EMAIL as string, process.env.REACT_APP_SUPABASE_DEV_PASSWORD as string)
+        } else {
+            kittenService.auth()
+        }
     }, [ kittenService ])
 
     return (

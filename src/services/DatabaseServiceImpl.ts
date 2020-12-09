@@ -3,6 +3,7 @@ import SupabaseClient from '@supabase/supabase-js/dist/main/SupabaseClient';
 import _omit from 'lodash-es/omit'
 import _pick from 'lodash-es/pick'
 import { DateTime } from 'luxon';
+//import ToasterService from 'r-maple/lib/Toast/ToasterService';
 import { DatabaseService } from "../models/DatabaseService";
 import { Expense } from '../models/Expense';
 import { Funds } from '../models/Funds';
@@ -20,8 +21,10 @@ export class DatabaseServiceImpl implements DatabaseService {
             process.env.REACT_APP_SUPABASE_KEY as string,
         )
 
-        // @ts-ignore
-        window.supabase = this.supabase
+        if (process.env.NODE_ENV === 'development') {
+            // @ts-ignore
+            window.supabase = this.supabase
+        }
     }
 
     signUp = async (email: string, password: string) => {
@@ -42,6 +45,10 @@ export class DatabaseServiceImpl implements DatabaseService {
         this.user = user as any
     }
 
+    signOut = async () => {
+        await this.supabase.auth.signOut()
+    }
+
     selectFunds = async(): Promise<Funds[]> => {
         const { data, error } = await this.supabase
             .from('funds')
@@ -50,6 +57,7 @@ export class DatabaseServiceImpl implements DatabaseService {
                 amount,
                 date
             `)
+        if (error) this.dispatchError(error)
         return Promise.resolve(data!)
     }
 
@@ -74,11 +82,12 @@ export class DatabaseServiceImpl implements DatabaseService {
                     date
                 )
             `)
+        if (error) this.dispatchError(error)
         return Promise.resolve(data!)
     }
 
     insertKitty = async (kitty: Kitty): Promise<void> => {
-        const { data, error } = await this.supabase
+        const { error } = await this.supabase
             .from('kitties')
             .insert([
                 {
@@ -88,28 +97,28 @@ export class DatabaseServiceImpl implements DatabaseService {
                     archived: kitty.archived
                 },
             ])
-        if (error) {
-            alert(`ERROR: ${JSON.stringify(error)}`)
-        }
+        if (error) this.dispatchError(error)
     }
 
     softDeleteKitty = async (id: string): Promise<void> => {
-        await this.supabase
+        const { error } = await this.supabase
             .from('kitties')
             .update({ archived: true })
             .eq('id', id)
+        if (error) this.dispatchError(error)
     }
 
     patchKitty = async (id: string, patch: Partial<Kitty>): Promise<void> => {
         const cleanPatch = _omit(patch, ['id'])
-        await this.supabase
+        const { error } = await this.supabase
             .from('kitties')
             .update(cleanPatch)
             .eq('id', id)
+        if (error) this.dispatchError(error)
     }
 
     insertExpense = async (expense: Expense): Promise<void> => {
-        const { data, error } = await this.supabase
+        const { error } = await this.supabase
             .from('expenses')
             .insert([
                 {
@@ -121,28 +130,28 @@ export class DatabaseServiceImpl implements DatabaseService {
                     date: DateTime.fromJSDate(expense.date).toISODate(),
                 },
             ])
-        if (error) {
-            alert(`ERROR: ${JSON.stringify(error)}`)
-        }
+        if (error) this.dispatchError(error)
     }
 
     patchExpense = async (id: string, patch: Partial<Expense>): Promise<void> => {
         const cleanPatch = _pick(patch, ['memo', 'date', 'amount'])
-        await this.supabase
+        const { error } = await this.supabase
             .from('expenses')
             .update(cleanPatch)
             .eq('id', id)
+        if (error) this.dispatchError(error)
     }
 
     deleteExpense = async (id: string) => {
-        await this.supabase
+        const { error } = await this.supabase
             .from('expenses')
             .delete()
             .eq('id', id)
+        if (error) this.dispatchError(error)
     }
 
     upsertSavings = async (savings: Savings): Promise<void> => {
-        const { data, error } = await this.supabase
+        const {  error } = await this.supabase
             .from('savings')
             .insert([
                 {
@@ -154,13 +163,11 @@ export class DatabaseServiceImpl implements DatabaseService {
                 },
             ],
             { upsert: true })
-        if (error) {
-            alert(`ERROR: ${JSON.stringify(error)}`)
-        }
+        if (error) this.dispatchError(error)
     }
 
     upsertFunds = async (funds: Funds): Promise<void> => {
-        const { data, error } = await this.supabase
+        const { error } = await this.supabase
             .from('funds')
             .insert([
                 {
@@ -171,8 +178,12 @@ export class DatabaseServiceImpl implements DatabaseService {
                 },
             ],
             { upsert: true })
-        if (error) {
-            alert(`ERROR: ${JSON.stringify(error)}`)
-        }
+        if (error) this.dispatchError(error)
+    }
+
+    private dispatchError = (error: any) => {
+        console.error(error)
+        alert('Something went wrong. Please come back later.')
+        throw error
     }
 }

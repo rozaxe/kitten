@@ -29,7 +29,7 @@ function Inner({ onClose }: any) {
                 <div className="or-dialog__content or-column">
                     A confirmation email has been sent to your email. Please click the link before sign in.
                 </div>
-                <div className="or-row-reverse p-1">
+                <div className="or-row--reverse p-1">
                     <button className="or-button--primary min-w-2/12g" onClick={onClose}>Done</button>
                 </div>
             </div>

@@ -21,6 +21,10 @@ export class DatabaseServiceMock implements DatabaseService {
     signIn = (email: string, password: string): Promise<void> => {
         return Promise.resolve()
     }
+    
+    signOut = (): Promise<void> => {
+        return Promise.resolve()
+    }
 
     softDeleteKitty = (id: string): Promise<void> => {
         return Promise.resolve()

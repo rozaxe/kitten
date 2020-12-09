@@ -52,13 +52,13 @@ function NewKittyForm({ onClose }: any) {
                 <div className="or-dialog__content or-column">
                     <label className="app-label">
                         Name
-                        <input className="or-input" placeholder="Name" name="name" ref={(node) => {
+                        <input className="or-input" placeholder="e.g. Trip to Paris" name="name" ref={(node) => {
                             register(node, { required: true })
                             nameRef.current = node
                         }} />
                     </label>
                 </div>
-                <div className="or-row-reverse p-1">
+                <div className="or-row--reverse p-1">
                     <input className="or-button--primary min-w-2/12g" type="submit" value="Create" disabled={!formState.isValid} />
                     <button type="button" className="or-button min-w-2/12g" onClick={onClose}>Cancel</button>
                 </div>

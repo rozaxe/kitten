@@ -1,3 +1,6 @@
+@import "r-orchid/lib/index.css";
+@import "r-maple/lib/index.css";
+
 @tailwind base;
 @tailwind components;
 

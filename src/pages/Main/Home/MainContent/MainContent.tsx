@@ -21,7 +21,7 @@ export default function MainContent({ className = '' }: MainContentProps) {
     )
 
     return (
-        <div className={`${className}`}>
+        <div className={`${className} overflow-y-scroll`}>
             <FoldOption
                 option={optionOnKitty}
                 onNone={() => (

@@ -65,16 +65,19 @@ function TreasuryForm({ onClose }: any) {
                 <div className="or-dialog__content or-column">
                     <label className="app-label">
                         Amount
-                        <input className="or-input" placeholder="Amount" type="number" name="amount" ref={(node) => {
+                        <input className="or-input" placeholder={kittenService.formatPrice(4200000)} type="number" step="any" name="amount" ref={(node) => {
                             register(node, { required: true })
                             amountRef.current = node
                         }} />
                     </label>
                     <div className="or-text">
-                        Delta: {kittenService.formatPrice(deltaFromLastMonths)}
+                        {amount === '' || deltaFromLastMonths === 0
+                            ? <div className="opacity-0">S</div>
+                            : <>Delta from last-month: {kittenService.formatPrice(deltaFromLastMonths)}</>
+                        }
                     </div>
                 </div>
-                <div className="or-row-reverse p-1">
+                <div className="or-row--reverse p-1">
                     <input className="or-button--primary min-w-2/12g" type="submit" value="Save" disabled={!formState.isValid} />
                     <button type="button" className="or-button min-w-2/12g" onClick={onClose}>Cancel</button>
                 </div>

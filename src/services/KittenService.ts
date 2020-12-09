@@ -1,13 +1,12 @@
 import { fold, fromNullable, isNone, none, Option, some } from 'fp-ts/lib/Option'
-import { pass } from 'fp-ts/lib/Writer'
 import _isEmpty from 'lodash-es/isEmpty'
 import _isEqual from 'lodash-es/isEqual'
 import _map from 'lodash-es/map'
 import _reduce from 'lodash-es/reduce'
 import { DateTime } from 'luxon'
 import { createStore, Store } from 'r-reactive-store'
-import { BehaviorSubject, combineLatest, defer, from, iif, Observable, of, ReplaySubject } from 'rxjs'
-import { catchError, distinctUntilChanged, filter, map, mapTo, shareReplay, switchMap, take, tap } from 'rxjs/operators'
+import { BehaviorSubject, combineLatest, defer, iif, Observable, of, ReplaySubject } from 'rxjs'
+import { distinctUntilChanged, filter, map, shareReplay, switchMap, tap } from 'rxjs/operators'
 import { v4 as uuidv4 } from 'uuid'
 import { DatabaseService } from '../models/DatabaseService'
 import { Expense } from '../models/Expense'
@@ -128,6 +127,7 @@ export class KittenService {
     getVisibleKittiesId$ = (): Observable<string[]> => {
         return this.selectKities$.pipe(
             map(kitties => kitties.filter(kitty => !kitty.archived)),
+            map(kitties => kitties.sort((a, b) => a.name.localeCompare(b.name))),
             map(kitties => kitties.map(kitty => kitty.id)),
             distinctUntilChanged(_isEqual)
         )
@@ -301,6 +301,17 @@ export class KittenService {
         )
     }
 
+    getExpensesIdOfKitty$ = (kittyId: string): Observable<string[]> => {
+        return this.getExpensesOfKitty$(kittyId).pipe(
+            map(
+                // @ts-ignore
+                (expenses) => expenses.sort((a, b) => (a.date < b.date) - (a.date > b.date))
+            ),
+            map(expenses => expenses.map((expense: Expense) => expense.id)),
+            distinctUntilChanged(_isEqual),
+        )
+    }
+
     private getSavingsOfKitty$ = (kittyId: string): Observable<Savings[]> => {
         return this.getKitty$(kittyId).pipe(
             switchMap(kitty => iif(
@@ -378,6 +389,7 @@ export class KittenService {
 
     getLastFunds$ = (): Observable<Funds> => {
         return this.getFunds$().pipe(
+            filter((funds) => funds.length > 0),
             map(this.older)
         )
     }
@@ -411,7 +423,6 @@ export class KittenService {
 
     auth = async () => {
         this.isSignedIn$.next(false)
-        // this.signIn(process.env.REACT_APP_SUPABASE_DEV_EMAIL as string, process.env.REACT_APP_SUPABASE_DEV_PASSWORD as string)
     }
 
     signUp = async (email: string, password: string): Promise<void> => {
@@ -419,16 +430,21 @@ export class KittenService {
     }
 
     signIn = async (email: string, password: string) => {
-        try {
-            await this.databaseService.signIn(email, password)
-            this.isSignedIn$.next(true)
-        } catch (error) {
-            
-        }
+        await this.databaseService.signIn(email, password)
+        this.isSignedIn$.next(true)
+    }
+
+    signOut = async () => {
+        await this.databaseService.signOut()
+        document.location.reload()
     }
 
     formatPrice = (amount: number): string => {
         return new Intl.NumberFormat(this.locale, { style: 'currency', currency: this.currency }).format(amount / this.currencyFactor)
+    }
+
+    formatPriceWithoutFraction = (amount: number): string => {
+        return new Intl.NumberFormat(this.locale, { style: 'currency', currency: this.currency, minimumFractionDigits: 0 }).format(amount / this.currencyFactor)
     }
 
     formatDate = (date: Date): string => {

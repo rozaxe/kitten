@@ -5,8 +5,9 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import { fold, none } from 'fp-ts/lib/Option'
 import { useObservable } from 'r-use-observable'
 import React, { useState } from 'react'
+import _first from 'lodash-es/first'
 import { useForm } from 'react-hook-form'
-import { of } from 'rxjs'
+import { Observable, of } from 'rxjs'
 import { switchMap } from 'rxjs/operators'
 import { number, object } from 'yup'
 import FoldOption from '../../../../../components/FoldOption'
@@ -14,6 +15,7 @@ import { useKittenService } from '../../../../../hooks/useKittenService'
 import ExpenseDetail from './ExpenseDetail/ExpenseDetail'
 import ExpenseDialog from './NewExpenseDialog/NewExpenseDialog'
 import UpdateKittyDialog from './UpdateKittyDialog/UpdateKittyDialog'
+import { useMemoObservable } from '../../../../../hooks/useMemoObservable'
 
 type KittyDetailProps = {
     kittyId: string
@@ -33,10 +35,24 @@ export default function KittyDetail({ kittyId }: KittyDetailProps): JSX.Element 
         resolver: yupResolver(savingsFormValues),
     })
 
+    const kittyId$ = useMemoObservable<string>(_first as any, [kittyId])
 
     const optionOnKitty = useObservable(
-        () => kittenService.getSomeKitty$(kittyId),
+        () => kittyId$.pipe(
+            switchMap(
+                (kittyId) => kittenService.getSomeKitty$(kittyId)
+            )
+        ),
         none
+    )
+
+    const expenses = useObservable(
+        () => kittyId$.pipe(
+            switchMap(
+                (kittyId) => kittenService.getExpensesIdOfKitty$(kittyId)
+            )
+        ),
+        []
     )
 
     const funds = useObservable(
@@ -67,9 +83,11 @@ export default function KittyDetail({ kittyId }: KittyDetailProps): JSX.Element 
         <FoldOption
             option={optionOnKitty}
             onSome={kitty => (
-                <div className="or-column">
-                    <div>
-                        {kitty.name}: {kittenService.formatPrice(funds)}
+                <div className="or-column px-3 py-1">
+                    <div className="or-row items-center">
+                        <div className="flex-1 text-left text-xl">
+                            {kitty.name}
+                        </div>
                         <button className="or-button" onClick={() => setIsEditFormOpen(true)} disabled={kitty.archived}>
                             <FontAwesomeIcon icon={faEdit} />
                         </button>
@@ -78,25 +96,33 @@ export default function KittyDetail({ kittyId }: KittyDetailProps): JSX.Element 
                             <FontAwesomeIcon icon={faArchive} />
                         </button>
                     </div>
-                    <div></div>
-                    <div className="or-row">
-                        <button className="or-button--primary" onClick={() => handleMakeSavings(1000)}>+10</button>
-                        <button className="or-button--primary" onClick={() => handleMakeSavings(5000)}>+50</button>
-                        <button className="or-button" onClick={() => handleMakeSavings(-1000)}>-10</button>
-                        <form className="ml-4 or-row" onSubmit={handleSubmit(handleMakeCustomSavings)}>
-                            <input className="or-input" name="amount" placeholder="+ 42" ref={register({ required: true })} />
+                    <div className="or-divider my-4" />
+                    <div className="or-row items-center">
+                        <div className="text-2xl">{kittenService.formatPrice(funds)}</div>
+                        <div className="flex-1" />
+
+                        <button className="or-button--primary" onClick={() => handleMakeSavings(1000)}>+{kittenService.formatPriceWithoutFraction(1000)}</button>
+                        <button className="or-button--primary" onClick={() => handleMakeSavings(5000)}>+{kittenService.formatPriceWithoutFraction(5000)}</button>
+
+                        <button className="or-button" onClick={() => handleMakeSavings(-1000)}>-{kittenService.formatPriceWithoutFraction(1000)}</button>
+                        <button className="or-button" onClick={() => handleMakeSavings(-5000)}>-{kittenService.formatPriceWithoutFraction(5000)}</button>
+
+                        <div className="or-divider mx-2" />
+                        <form className="or-row" onSubmit={handleSubmit(handleMakeCustomSavings)}>
+                            <input className="or-input" name="amount" step="any" placeholder={`+${kittenService.formatPriceWithoutFraction(4200)}`} ref={register({ required: true })} />
                             <button type="submit" className="or-button">
                                 <FontAwesomeIcon icon={faCalculator} />
                             </button>
                         </form>
                     </div>
-                    <button className="or-button" onClick={() => setIsFormOpen(true)}>
-                        <FontAwesomeIcon icon={faPlusSquare} className="mr-2" />
-                        New expense
-                    </button>
-                    <ExpenseDialog isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} kittyId={kittyId} />
-                    <div className="or-column">
-                        {kitty.expenses.map(expenseId => <ExpenseDetail key={expenseId} expenseId={expenseId} />)}
+                    <div className="or-divider my-4" />
+                    <div className="or-column max-w-12g w-full mx-auto">
+                        <button className="or-button self-end w-4/12g" onClick={() => setIsFormOpen(true)}>
+                            <FontAwesomeIcon icon={faPlusSquare} className="mr-2" />
+                            New expense
+                        </button>
+                        <ExpenseDialog isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} kittyId={kittyId} />
+                        {expenses.map(expenseId => <ExpenseDetail key={expenseId} expenseId={expenseId} />)}
                     </div>
                 </div>
             )}

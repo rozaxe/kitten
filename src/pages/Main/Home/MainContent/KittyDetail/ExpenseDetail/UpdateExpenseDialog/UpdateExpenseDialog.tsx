@@ -58,14 +58,14 @@ function UpdateExpenseForm({ expenseId, onClose }: any) {
                     </label>
                     <label className="app-label">
                         Amount
-                        <input className="or-input" placeholder="Amount" type="number" name="amount" step={`.01`} ref={register({ required: true })} />
+                        <input className="or-input" placeholder="Amount" type="number" name="amount" step="any" ref={register({ required: true })} />
                     </label>
                     <label className="app-label">
                         Date
                         <input className="or-input" placeholder="Date" type="date" name="date" ref={register} defaultValue={kittenService.formatDateInputValue(new Date())} />
                     </label>
                 </div>
-                <div className="or-row-reverse p-1">
+                <div className="or-row--reverse p-1">
                     <input className="or-button--primary min-w-2/12g" type="submit" value="Update" disabled={!formState.isValid} />
                     <button type="button" className="or-button min-w-2/12g" onClick={onClose}>Cancel</button>
                 </div>
