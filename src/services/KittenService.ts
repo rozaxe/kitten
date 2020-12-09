@@ -1,3 +1,4 @@
+/* eslint-disable no-throw-literal */
 import { fold, fromNullable, isNone, none, Option, some } from 'fp-ts/lib/Option'
 import _isEmpty from 'lodash-es/isEmpty'
 import _isEqual from 'lodash-es/isEqual'

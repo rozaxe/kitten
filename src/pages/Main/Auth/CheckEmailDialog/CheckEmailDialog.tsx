@@ -1,17 +1,10 @@
 import { Dialog } from 'r-maple'
 import React from 'react'
-import { date, number, object, string } from 'yup'
 
 type CheckEmailDialogProps = {
     isOpen: boolean
     onClose: () => void
 }
-
-const formSchema = object({
-    memo: string().required(),
-    date: date().required(),
-    amount: number().required(),
-})
 
 export default function CheckEmailDialog({ isOpen, onClose }: CheckEmailDialogProps): JSX.Element {
     return (

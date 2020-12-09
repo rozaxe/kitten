@@ -6,7 +6,7 @@ export function useForm(...args: any) {
     return { ...form, registerRef: makeRegisterRef(form.register) }
 }
 
-function makeRegisterRef<T>(register: any) {
+function makeRegisterRef(register: any) {
     return (ref: any, ...args: any) => (node:any) => {
         register(node, ...args)
         ref.current = node

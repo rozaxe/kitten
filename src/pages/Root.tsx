@@ -1,8 +1,7 @@
-import React, { Suspense } from "react";
-import { DatabaseMockProvider } from "../providers/DatabaseMockProvider";
-import { KittenProvider } from "../providers/KittenProvider";
-import { DatabaseProvider } from "../providers/DatabaseProvider";
 import { Spinner } from "r-maple";
+import React, { Suspense } from "react";
+import { DatabaseProvider } from "../providers/DatabaseProvider";
+import { KittenProvider } from "../providers/KittenProvider";
 
 
 const Main = React.lazy(() => import('./Main/Main'))

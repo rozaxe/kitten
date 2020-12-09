@@ -1,4 +1,4 @@
-import { none, Option } from "fp-ts/lib/Option";
+import { none } from "fp-ts/lib/Option";
 import { Spinner } from "r-maple";
 import { useObservable } from "r-use-observable";
 import { useEffect } from "react";

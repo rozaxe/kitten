@@ -5,7 +5,7 @@ import { useObservable } from 'r-use-observable'
 import React, { useEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { map } from 'rxjs/operators'
-import { date, number, object, string } from 'yup'
+import { number, object } from 'yup'
 import { useKittenService } from '../../../../../hooks/useKittenService'
 import { Funds } from '../../../../../models/Funds'
 

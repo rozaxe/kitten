@@ -1,13 +1,9 @@
 import { yupResolver } from '@hookform/resolvers/yup'
-import { fold, none, some } from 'fp-ts/lib/Option'
 import { Dialog } from 'r-maple'
-import { useObservable } from 'r-use-observable'
 import React, { useEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
-import { map } from 'rxjs/operators'
-import { date, number, object, string } from 'yup'
+import { object, string } from 'yup'
 import { useKittenService } from '../../../../../hooks/useKittenService'
-import { Funds } from '../../../../../models/Funds'
 
 type NewKittyDialogProps = {
     isOpen: boolean
@@ -29,7 +25,7 @@ export default function NewKittyDialog({ isOpen, onClose }: NewKittyDialogProps)
 function NewKittyForm({ onClose }: any) {
     const kittenService = useKittenService()
 
-    const { register, handleSubmit, formState, watch } = useForm({
+    const { register, handleSubmit, formState } = useForm({
         mode: 'onChange',
         resolver: yupResolver(newKittyFormSchema),
     })

@@ -57,7 +57,8 @@
     "build:web": "react-scripts build",
     "postbuild": "purgecss --config purgecss.config.js && cleancss -o build/components.out.css build/components.out.css",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "lint": "eslint --fix --ext js,jsx,ts,tsx src"
   },
   "eslintConfig": {
     "extends": [

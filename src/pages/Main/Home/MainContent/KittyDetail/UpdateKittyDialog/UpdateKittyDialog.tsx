@@ -28,7 +28,7 @@ function UpdateKittyForm({ kittyId, onClose }: any) {
     const kittenService = useKittenService()
     const kitty = kittenService.getKitty(kittyId)
 
-    const { register, registerRef, handleSubmit, formState } = useForm({
+    const { registerRef, handleSubmit, formState } = useForm({
         mode: 'onChange',
         defaultValues: {
             name: kitty.name
