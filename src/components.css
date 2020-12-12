@@ -1,0 +1,15 @@
+@import "r-orchid/lib/index.css";
+@import "r-maple/lib/index.css";
+
+@tailwind base;
+@tailwind components;
+
+.app-label {
+    @apply m-1 flex flex-col;
+}
+
+.app-label > .or-input {
+    @apply m-0 mt-1;
+}
+
+@tailwind utilities;

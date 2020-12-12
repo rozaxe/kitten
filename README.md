@@ -1,46 +1,37 @@
-# Getting Started with Create React App
+# Kitten
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Kitten is a web app to help you save money for the things you love.
 
-## Available Scripts
+Basically, it allows you to split your treasury (the money available in your bank's account) into kitties (e.g. Trip to Paris, PS5, Housing, etc.) you wish to save money for.
 
-In the project directory, you can run:
+Of course, no banking information is ever needed, everything is done through the user's manual ~~labor~~ input.
 
-### `yarn start`
+## How to
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+After registering, set your current treasury.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+Click the edition icon right to "Treasury". You will be prompted to enter your amount.
 
-### `yarn test`
+Next, create some kitties.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+For instance you might be planning a trip to Marseille in France? Or you might be trying to save money for buying a house? Or you just want to keep some cash for Cyberpunk 2077 and its incoming DLC??
 
-### `yarn build`
+This is what a kitty is for. Click on "New kitty" and fill in the blanks.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+After that, you can start saving money!
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Click on a kitty. You should see a detailed page of your kitty.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+On top, you can edit or archive it.
 
-### `yarn eject`
+Below, this is where you make savings. Just click the button to add some money (or withdraw some). As you do so, you should see your treasury lowering and your kitty increasing. That's great, you have virtually saved money (make sure to not spend it in real-life though 😉)!
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+Now for the **best** part. When your kitty overflows with money, it is time to spend it 🤩
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Click on "New expense", fill in the blanks, and *bam*! You made an expense with your hard-earned money.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+When your kitty is not useful anymore, you can archive it. Any money left will return to your treasury.
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+And that's it!
 
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+I hope you'll enjoy spending wisely with Kitten 🐾
