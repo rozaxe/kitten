@@ -95,7 +95,7 @@ function KittyCard({ kittyId }: KittyCardProps): JSX.Element {
                             </div>
                         )}
                     />
-                    <div className="font-bold">
+                    <div className={`font-bold ${funds < 0 ? 'text-red-60' : ''}`}>
                         {kittenService.formatPrice(funds)}
                     </div>
                 </div>

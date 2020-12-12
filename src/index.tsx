@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom'
 import './index.scss'
 import Root from './pages/Root'
 import reportWebVitals from './reportWebVitals'
+import './analytics'
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))

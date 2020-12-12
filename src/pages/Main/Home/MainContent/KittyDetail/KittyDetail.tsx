@@ -98,7 +98,9 @@ export default function KittyDetail({ kittyId }: KittyDetailProps): JSX.Element 
                     </div>
                     <div className="or-divider my-4" />
                     <div className="or-row items-center">
-                        <div className="text-2xl">{kittenService.formatPrice(funds)}</div>
+                        <div className={`text-2xl ${funds < 0 ? 'text-red-60' : ''}`}>
+                            {kittenService.formatPrice(funds)}
+                        </div>
                         <div className="flex-1" />
 
                         <button className="or-button--primary" onClick={() => handleMakeSavings(1000)}>+{kittenService.formatPriceWithoutFraction(1000)}</button>
@@ -109,7 +111,7 @@ export default function KittyDetail({ kittyId }: KittyDetailProps): JSX.Element 
 
                         <div className="or-divider mx-2" />
                         <form className="or-row" onSubmit={handleSubmit(handleMakeCustomSavings)}>
-                            <input className="or-input" name="amount" step="any" placeholder={`+${kittenService.formatPriceWithoutFraction(4200)}`} ref={register({ required: true })} />
+                            <input className="or-input w-0" name="amount" step="any" placeholder={`+${kittenService.formatPriceWithoutFraction(4200)}`} ref={register({ required: true })} />
                             <button type="submit" className="or-button">
                                 <FontAwesomeIcon icon={faCalculator} />
                             </button>
